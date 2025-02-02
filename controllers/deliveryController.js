@@ -1,3 +1,4 @@
+const User = require("../models/User");
 const Delivery = require("../models/Delivery");
 const amqp = require("amqplib/callback_api");
 
