@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Order = require("../models/Order");
 const Delivery = require("../models/Delivery");
 const amqp = require("amqplib/callback_api");
 
@@ -28,10 +29,9 @@ const sendToQueue = (queue, message) => {
 // Create a new delivery
 exports.createDelivery = async (req, res) => {
     try {
-        const { orderId, trackingNumber, deliveryDate, notes, destination } = req.body;
+        const { orderId, deliveryDate, notes, destination } = req.body;
         const delivery = new Delivery({
             orderId,
-            trackingNumber,
             deliveryDate,
             notes,
             destination,
@@ -53,7 +53,6 @@ exports.createDelivery = async (req, res) => {
 
         // Prepare message with targetEmail & targetPhone
         const message = {
-            trackingNumber: trackingNumber,
             deliveryStatus: "pending",
             deliveryDate: deliveryDate,
             deliveryId: delivery._id,
@@ -73,8 +72,8 @@ exports.createDelivery = async (req, res) => {
 // Update delivery status and send a message to the queue
 exports.updateDeliveryStatus = async (req, res) => {
     try {
-        const { trackingNumber, status, currentLocation } = req.body;
-        const delivery = await Delivery.findOne({ trackingNumber })
+        const { deliveryId, status, currentLocation } = req.body;
+        const delivery = await Delivery.findById(deliveryId)
             .populate({
                 path: "orderId",
                 populate: { path: "userId", select: "email phone" }
@@ -92,7 +91,6 @@ exports.updateDeliveryStatus = async (req, res) => {
 
         // Prepare message with targetEmail & targetPhone
         const message = {
-            trackingNumber: delivery.trackingNumber,
             deliveryStatus: delivery.deliveryStatus,
             deliveryDate: delivery.deliveryDate,
             deliveryId: delivery._id,
@@ -112,8 +110,8 @@ exports.updateDeliveryStatus = async (req, res) => {
 // Get delivery status
 exports.getDeliveryStatus = async (req, res) => {
     try {
-        const { trackingNumber } = req.params;
-        const delivery = await Delivery.findOne({ trackingNumber });
+        const { deliveryId } = req.params;
+        const delivery = await Delivery.findById(deliveryId);
 
         if (!delivery) return res.status(404).json({ message: "Delivery not found" });
 
