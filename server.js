@@ -18,7 +18,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 app.use("", authenticate, deliveryRoutes);
 
-const port = process.env.PORT || 5001;
+const port = process.env.PORT || 3006;
 app.listen(port, () => {
   console.log(`Delivery Service running on port ${port}`);
 });
